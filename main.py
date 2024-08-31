@@ -26,8 +26,8 @@ def main(args):
     # Instantiate the targeted LLM
     config = model_configs.MODELS[args.target_model]
     target_model = language_models.LLM(
-        model_path=os.path.join(script_dir, config['model_path']),
-        tokenizer_path=os.path.join(script_dir, config['tokenizer_path']),
+        model_path=config['model_path'],
+        tokenizer_path=config['tokenizer_path'],
         conv_template_name=config['conversation_template'],
         device='cuda:0'
     )
