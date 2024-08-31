@@ -13,14 +13,21 @@ import lib.model_configs as model_configs
 
 def main(args):
 
+    # Get the directory where the script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Dynamically adjust paths
+    args.results_dir = os.path.join(script_dir, args.results_dir)
+    args.attack_logfile = os.path.join(script_dir, args.attack_logfile)
+
     # Create output directories
     os.makedirs(args.results_dir, exist_ok=True)
-    
+
     # Instantiate the targeted LLM
     config = model_configs.MODELS[args.target_model]
     target_model = language_models.LLM(
-        model_path=config['model_path'],
-        tokenizer_path=config['tokenizer_path'],
+        model_path=os.path.join(script_dir, config['model_path']),
+        tokenizer_path=os.path.join(script_dir, config['tokenizer_path']),
         conv_template_name=config['conversation_template'],
         device='cuda:0'
     )
@@ -45,6 +52,7 @@ def main(args):
         jb = defense.is_jailbroken(output)
         jailbroken_results.append(jb)
 
+    num_errors = len([res for res in jailbroken_results if res])
     print(f'We made {num_errors} errors')
 
     # Save results to a pandas DataFrame
