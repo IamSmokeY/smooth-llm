@@ -1,7 +1,7 @@
 MODELS = {
     'llama2': {
-        'model_path': '/shared_data0/arobey1/llama-2-7b-chat-hf',
-        'tokenizer_path': '/shared_data0/arobey1/llama-2-7b-chat-hf',
+        'model_path': 'meta-llama/Llama-2-7b-chat-hf',
+        'tokenizer_path': 'meta-llama/Llama-2-7b-chat-hf',
         'conversation_template': 'llama-2'
     },
     'vicuna': {
