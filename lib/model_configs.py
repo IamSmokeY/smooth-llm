@@ -5,8 +5,8 @@ MODELS = {
         'conversation_template': 'llama-2'
     },
     'vicuna': {
-        'model_path': '/shared_data0/arobey1/vicuna-13b-v1.5',
-        'tokenizer_path': '/shared_data0/arobey1/vicuna-13b-v1.5',
+        'model_path': 'lmsys/vicuna-13b-v1.3',
+        'tokenizer_path': 'lmsys/vicuna-13b-v1.3',
         'conversation_template': 'vicuna'
     }
 }
