@@ -12,45 +12,61 @@ import lib.language_models as language_models
 import lib.model_configs as model_configs
 
 def main(args):
+    print("Starting main function")
 
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    print(f"Script directory: {script_dir}")
 
     # Dynamically adjust paths
     args.results_dir = os.path.join(script_dir, args.results_dir)
     args.attack_logfile = os.path.join(script_dir, args.attack_logfile)
+    print(f"Results directory: {args.results_dir}")
+    print(f"Attack logfile: {args.attack_logfile}")
 
     # Create output directories
     os.makedirs(args.results_dir, exist_ok=True)
+    print("Created output directories if they did not exist")
 
     # Instantiate the targeted LLM
     config = model_configs.MODELS[args.target_model]
+    print(f"Loading model: {config['model_path']} with tokenizer: {config['tokenizer_path']}")
+    
     target_model = language_models.LLM(
         model_path=config['model_path'],
         tokenizer_path=config['tokenizer_path'],
         conv_template_name=config['conversation_template'],
         device='cuda:0'
     )
+    print("Target model instantiated")
 
     # Create SmoothLLM instance
+    print(f"Creating SmoothLLM instance with perturbation type: {args.smoothllm_pert_type}")
     defense = defenses.SmoothLLM(
         target_model=target_model,
         pert_type=args.smoothllm_pert_type,
         pert_pct=args.smoothllm_pert_pct,
         num_copies=args.smoothllm_num_copies
     )
+    print("SmoothLLM instance created")
 
     # Create attack instance, used to create prompts
+    print(f"Creating attack instance with attack type: {args.attack}")
     attack = vars(attacks)[args.attack](
         logfile=args.attack_logfile,
         target_model=target_model
     )
+    print("Attack instance created")
 
     jailbroken_results = []
+    print("Starting attack prompts processing")
     for i, prompt in tqdm(enumerate(attack.prompts)):
+        print(f"Processing prompt {i}")
         output = defense(prompt)
         jb = defense.is_jailbroken(output)
+        print(f"Prompt {i} jailbroken status: {jb}")
         jailbroken_results.append(jb)
+    print("Finished processing attack prompts")
 
     num_errors = len([res for res in jailbroken_results if res])
     print(f'We made {num_errors} errors')
@@ -66,11 +82,14 @@ def main(args):
     summary_df.to_pickle(os.path.join(
         args.results_dir, 'summary.pd'
     ))
+    print("Results saved to summary.pd")
     print(summary_df)
 
+    print("Main function completed")
 
 if __name__ == '__main__':
     torch.cuda.empty_cache()
+    print("CUDA cache cleared")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -128,4 +147,6 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
+    print("Arguments parsed")
     main(args)
+
