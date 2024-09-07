@@ -25,13 +25,15 @@ class Defense:
 
     def __init__(self, target_model):
         self.target_model = target_model
+        print(f"Defense initialized with target model: {target_model}")
 
     def is_jailbroken(self, s):
         """Returns True if a prompt results in a jailbreak; False otherwise."""
-
-        return not any([
+        result = not any([
             prefix in s for prefix in self.TEST_PREFIXES
         ])
+        print(f"Checking if output is jailbroken: {result}")
+        return result
 
 class SmoothLLM(Defense):
 
@@ -50,35 +52,38 @@ class SmoothLLM(Defense):
         num_copies
     ):
         super(SmoothLLM, self).__init__(target_model)
-        
+        print(f"Initializing SmoothLLM with perturbation type: {pert_type}, perturbation percentage: {pert_pct}, number of copies: {num_copies}")
+
         self.num_copies = num_copies
         self.perturbation_fn = vars(perturbations)[pert_type](
             q=pert_pct
         )
+        print(f"Perturbation function initialized: {self.perturbation_fn}")
 
     @torch.no_grad()
     def __call__(self, prompt, batch_size=64, max_new_len=100):
+        print(f"Processing prompt with batch size: {batch_size} and max new length: {max_new_len}")
 
         all_inputs = []
-        for _ in range(self.num_copies):
+        for i in range(self.num_copies):
             prompt_copy = copy.deepcopy(prompt)
             prompt_copy.perturb(self.perturbation_fn)
             all_inputs.append(prompt_copy.full_prompt)
+            print(f"Perturbed prompt copy {i+1}/{self.num_copies}")
 
         # Iterate each batch of inputs
         all_outputs = []
         for i in range(self.num_copies // batch_size + 1):
-
-            # Get the current batch of inputs
             batch = all_inputs[i * batch_size:(i+1) * batch_size]
+            print(f"Processing batch {i+1}/{(self.num_copies // batch_size + 1)} with size {len(batch)}")
 
             # Run a forward pass through the LLM for each perturbed copy
             batch_outputs = self.target_model(
                 batch=batch, 
                 max_new_tokens=prompt.max_new_tokens
             )
-
             all_outputs.extend(batch_outputs)
+            print(f"Batch {i+1} outputs collected")
             torch.cuda.empty_cache()
 
         # Check whether the outputs jailbreak the LLM
@@ -87,17 +92,17 @@ class SmoothLLM(Defense):
             raise ValueError("LLM did not generate any outputs.")
 
         outputs_and_jbs = zip(all_outputs, are_copies_jailbroken)
-
-        # Determine whether SmoothLLM was jailbroken
         jb_percentage = np.mean(are_copies_jailbroken)
         smoothLLM_jb = True if jb_percentage > 0.5 else False
+        print(f"Jailbreak percentage: {jb_percentage*100:.2f}%")
+        print(f"SmoothLLM detected jailbreak: {smoothLLM_jb}")
 
         # Pick a response that is consistent with the majority vote
         majority_outputs = [
             output for (output, jb) in outputs_and_jbs 
             if jb == smoothLLM_jb
         ]
-        return random.choice(majority_outputs)
+        selected_output = random.choice(majority_outputs)
+        print("Selected output from majority vote")
 
-
-
+        return selected_output
