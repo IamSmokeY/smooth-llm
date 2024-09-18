@@ -99,7 +99,7 @@ if __name__ == '__main__':
         '--target_model',
         type=str,
         default='vicuna',
-        choices=['vicuna', 'llama2']
+        choices=['vicuna', 'llama2','llama3.1']
     )
 
     # Attacking LLM
