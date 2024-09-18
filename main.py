@@ -47,11 +47,21 @@ def main(args):
     )
 
     jailbroken_results = []
+    outputs = []
     for i, prompt in tqdm(enumerate(attack.prompts)):
         output = defense(prompt)
+        outputs.append(output)
         jb = defense.is_jailbroken(output)
         jailbroken_results.append(jb)
+    import json
 
+    # Create output file path
+    output_file_path = os.path.join(args.results_dir, 'output.json')
+
+    # Append each output to the JSON file
+    with open(output_file_path, 'w') as output_file:
+        output_json = {"outputs": outputs}
+        output_file.write(json.dumps(output_json,indent=4))
     num_errors = len([res for res in jailbroken_results if res])
     print(f'We made {num_errors} errors')
 
