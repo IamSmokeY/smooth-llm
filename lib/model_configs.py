@@ -7,7 +7,7 @@ MODELS = {
     'llama3.1': {
         'model_path': 'meta-llama/Meta-Llama-3.1-8B-Instruct',
         'tokenizer_path': 'meta-llama/Meta-Llama-3.1-8B-Instruct',
-        'conversation_template': 'llama-2'
+        'conversation_template': 'llama-3'
     },
     'vicuna': {
         'model_path': 'lmsys/vicuna-13b-v1.3',
