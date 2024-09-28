@@ -73,10 +73,12 @@ class SmoothLLM(Defense):
             batch = all_inputs[i * batch_size:(i+1) * batch_size]
 
             # Run a forward pass through the LLM for each perturbed copy
-            batch_outputs = self.target_model(
-                batch=batch, 
-                max_new_tokens=prompt.max_new_tokens
-            )
+            batch_outputs = []
+            for single_prompt in batch:
+                output = self.target_model.generate(
+                    single_prompt
+                )
+                batch_outputs.append(output)
 
             all_outputs.extend(batch_outputs)
             torch.cuda.empty_cache()

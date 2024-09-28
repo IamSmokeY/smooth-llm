@@ -24,17 +24,12 @@ def main(args):
     os.makedirs(args.results_dir, exist_ok=True)
 
     # Instantiate the targeted LLM
-    config = model_configs.MODELS[args.target_model]
-    target_model = language_models.LLM(
-        model_path=config['model_path'],
-        tokenizer_path=config['tokenizer_path'],
-        conv_template_name=config['conversation_template'],
-        device='cuda:0'
-    )
+    from SafeDecoding.exp.helper import SafeDecodingManager
+    safeDecodingLLM = SafeDecodingManager()
 
     # Create SmoothLLM instance
     defense = defenses.SmoothLLM(
-        target_model=target_model,
+        target_model=safeDecodingLLM,
         pert_type=args.smoothllm_pert_type,
         pert_pct=args.smoothllm_pert_pct,
         num_copies=args.smoothllm_num_copies
@@ -43,7 +38,7 @@ def main(args):
     # Create attack instance, used to create prompts
     attack = vars(attacks)[args.attack](
         logfile=args.attack_logfile,
-        target_model=target_model
+        target_model=safeDecodingLLM
     )
 
     jailbroken_results = []
