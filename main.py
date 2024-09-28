@@ -11,11 +11,17 @@ import lib.attacks as attacks
 import lib.language_models as language_models
 import lib.model_configs as model_configs
 
+import sys
+sys.path.append('/content/SafeDecoding')
+sys.path.append('../')
+print("appened")
+
+from SafeDecoding.exp.helper import SafeDecodingManager
+
 def main(args):
 
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-
     # Dynamically adjust paths
     args.results_dir = os.path.join(script_dir, args.results_dir)
     args.attack_logfile = os.path.join(script_dir, args.attack_logfile)
@@ -23,8 +29,8 @@ def main(args):
     # Create output directories
     os.makedirs(args.results_dir, exist_ok=True)
 
+    print("initializing safedecoding")
     # Instantiate the targeted LLM
-    from SafeDecoding.exp.helper import SafeDecodingManager
     safeDecodingLLM = SafeDecodingManager()
 
     # Create SmoothLLM instance
@@ -43,7 +49,7 @@ def main(args):
 
     jailbroken_results = []
     outputs = []
-    for i, prompt in tqdm(enumerate(attack.prompts)):
+    for prompt in tqdm(attack.prompts):
         output = defense(prompt)
         outputs.append(output)
         jb = defense.is_jailbroken(output)
